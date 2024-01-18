@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Slot Machine</title>
+</head>
+<body>
+    <h1>Slot Machine Game</h1>
+	<p> Lemon = 0, Grape = 1, Banana = 2, Kiwi = 3, Orange = 4, Strawberry = 5, Cherry = 6  </p>
+    <script>
+        //slot machine class
+        class SlotMachine {
+			//constructor 
+            constructor() {
+                this.lastAmountWon = 0;
+                this.numbers = [];
+                this.images = [];
+
+                //dynamically add images 
+                for (let i = 0; i < 3; i++) {
+                    const img = document.createElement('img');
+                    img.style = "display:none";
+                    img.src = "";
+                    img.width = 64;
+                    img.height = 64;
+                    document.body.appendChild(img);
+                    this.images.push(img);
+                }
+            }
+
+			//play function 
+            play() {
+			
+                //generate random numbers 0 through 6 for the slot machine 
+                this.numbers = Array.from({ length: 3 }, () => Math.floor(Math.random() * 7));
+
+                //set image sources and alt text based on the generated numbers
+                this.images.forEach((img, index) => {
+                    img.src = `${this.numbers[index]}.png`;  //images are called 0.png, 1.png, etc. 
+                    img.alt = `Number ${this.numbers[index]}`; //alt text for images 
+                });
+
+                //logic to determine winning amoutn 
+                if (this.numbers.every(number => number === 0)) { //all numbers are 0 
+                    this.lastAmountWon = 14; 
+                } else if (this.numbers.every(number => number !== 0 && number === this.numbers[0])) { //all numbers are the same but not 0 
+                    this.lastAmountWon = 7;
+                } else if (this.numbers[0] === 0 && this.numbers[1] === 0) { //first two numbers are 0 
+                    this.lastAmountWon = 3;
+                } else if (this.numbers[0] !== 0 && this.numbers[1] !== 0 && this.numbers[0] === this.numbers[1]) { //first two numbers are the same but not 0
+                    this.lastAmountWon = 2;
+                } else if (this.numbers[0] === 0) { //first number is 0 
+                    this.lastAmountWon = 1;
+                } else { //anything else 
+                    this.lastAmountWon = 0;
+                }
+            }
+        }
+
+        //main class 
+        class Main {
+		
+			//constructor 
+            constructor() {
+                this.Money = 100;
+                this.slotMachines = [];
+                this.outputSections = [];
+
+                //creates slot machines 
+                for (let i = 0; i < 3; i++) {
+                    const slotMachine = new SlotMachine();
+                    this.slotMachines.push(slotMachine);
+					
+					//makes the slot machines look 3x3 instead of all in a row 
+                    const outputSection = document.createElement('section');
+                    document.body.appendChild(outputSection);
+                    this.outputSections.push(outputSection);
+                }
+
+                //money displayed 
+                this.moneyDisplay = document.createElement('p');
+                this.moneyDisplay.innerText = `Current Money: $${this.Money}`;
+                document.body.appendChild(this.moneyDisplay);
+
+                //button to play the game 
+                const playButton = document.createElement('button');
+                playButton.innerText = 'Play';
+                playButton.addEventListener('click', () => this.playAll());
+                document.body.appendChild(playButton);
+            }
+
+			//play all function 
+            playAll() {
+			
+				//play if the player has money 
+                if (this.Money > 0) {
+                    let totalWinnings = 0;
+
+					//makes images appear when button is pressed 
+                    for (let i = 0; i < 3; i++) {
+                        this.slotMachines[i].images.forEach(img => img.style.display = "inline");
+                        this.slotMachines[i].play();
+
+                        totalWinnings += this.slotMachines[i].lastAmountWon;
+                    }
+
+					//shows winning amount if the player has won anything, if not says game over 
+                    if (totalWinnings > 0) {
+                        this.outputSections[2].innerText = `Winner! Total Winnings: ${totalWinnings}`;
+                    } else {
+                        this.outputSections[2].innerText = 'Game Over';
+                    }
+
+					//adds total winning to player's money 
+                    this.Money += totalWinnings;
+                    this.moneyDisplay.innerText = `Current Money: $${this.Money}`;
+                }
+            }
+        }
+
+        const main = new Main();
+    </script>
+</body>
+</html>
